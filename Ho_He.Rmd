@@ -2,7 +2,7 @@
 output:
   html_document:
     df_print: paged
-  pdf_document: Ho/He
+  pdf_document: Ho/He ytyyr
 ---
 
 #Packages
