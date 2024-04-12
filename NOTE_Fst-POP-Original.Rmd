@@ -1,0 +1,404 @@
+## Notes #### Notes #### Notes #### Notes #### Notes #### Notes #### Notes #### Notes #### Notes #### Notes #### Notes ##
+
+#NOTE: How to find the function in package?
+  #answer: https://stackoverflow.com/questions/20535247/how-to-find-all-functions-in-an-r-package
+  
+#How to find help on function? ex: (this is important fn+f1)
+the function + fn + f1 
+
+# how to know directory?
+getwd()
+
+#how to open chunk? 
+( Cmd + Option + i)
+
+#populations names?
+nl= c("CHB","RHB","CHR","RHR","CHC","RHC","CKB","RKB","CKR","RKR","CKC","RKC","CVB","RVB","CVR","RVR","CVC","RVC", "CSB","RSB","CSR","RSR","CSC","RSC")
+
+nl= c("Heikkisenjoki_Background", "Heikkisenjoki_Recovery", "Heikkisenjoki_Contemporary","KALL_Background", "KALL_Recovery", "KALL_Contemporary","Savijoki_Background", "Savijoki_Recovery", "Savijoki_Contemporary","Siltapuro_Background", "Siltapuro_Recovery", "Siltapuro_Contemporary")
+
+#export table: 
+write.table(mtcars, file = 'mtcars.tsv', sep = "\t", row.names = FALSE)
+Or check the environment 
+source: https://www.gastonsanchez.com/R-coding-basics/export-data.html 
+
+#popgene file?
+https://genepop.curtin.edu.au/help_input.html
+
+#save hetrozygosity image:
+ggsave("my_plot.png", width = 10, height = 6)
+
+#40_START WORK#40_START WORK#40_START WORK#40_START WORK#40_START WORK#40_START WORK#40_START WORK
+
+
+```{r}
+install.packages("ggplot2", repos = "http://cran.us.r-project.org")
+library("ggplot2") 
+install.packages("adegenet", repos = "http://cran.us.r-project.org") 
+library("adegenet") 
+install.packages("dplyr", repos = "http://cran.us.r-project.org") 
+library("dplyr") 
+install.packages("poppr", repos = "http://cran.us.r-project.org") 
+library("poppr") 
+install.packages("hierfstat", repos = "http://cran.us.r-project.org") 
+library("hierfstat") 
+install.packages("reshape2", repos = "http://cran.us.r-project.org") 
+library("reshape2") 
+install.packages("scales", repos = "http://cran.us.r-project.org") 
+library("scales") 
+install.packages("RColorBrewer", repos = "http://cran.us.r-project.org") 
+library("RColorBrewer") 
+```
+#1 upload genind data:
+```{r}
+Brown.Trout = read.genepop('/Users/nooralwash/Downloads/Nomin2.gen', ncode = 3L)
+```
+
+#2 print
+```{r}
+Brown.Trout
+```
+
+#3 basic-stats
+```{r}
+basic_stats = basic.stats(Brown.Trout)
+basic_stats
+```
+
+#check directory
+```{r}
+getwd()
+```
+
+#5 FIS, define fis? Matings between relatives will cause an increase in homozygosity. The inbreeding coefficient (f) is the probability that the two alleles at a locus within an individual are identical by descent, to comparing heterozygosities, it would be good to compare the He and Ho, that will give us a read on whether the populations are out of HWE, i.e. whether there are signs of inbreeding (Ho < He) or population substructure or e.g. interbreeding of previously isolated populations (Ho > He). The relationship between He and Ho is given by Fis – value and with R you can calculate confidence intervals for it. This would be good to report also.
+
+```{r}
+FIS = apply(basic_stats$Fis, MARGIN = 2, FUN = mean, na.rm = T) %>%
+  round(digits = 2)
+```
+
+```{r}
+FIS
+```
+
+#table
+```{r}
+write.table(FIS, file =  "/Users/nooralwash/Desktop/PhD/Rstudio saved session/FIS.txt" , row.names = FALSE)
+```
+
+#6
+```{r}
+FIS_CI = boot.ppfis(dat = Brown.Trout, nboot = 1000, dig = 2)
+```
+
+#7 print
+```{r}
+FIS_CI
+```
+
+#Toumas code to check C.I. for Fst
+```{r}
+example_fst = diffCalc(infile="/Users/nooralwash/Downloads/FST-Control.gen", fst = T, bs_pairwise = T, boots = 10000, outfile = "example_fst") 
+```
+
+```{r}
+example_fst
+```
+
+
+```{r}
+#test by Haider
+Brown.Trout@loc.n.all
+FIS = apply(YOUR_DATA$Fis, MARGIN = 2, FUN = mean, na.rm = T) %>%
+
+  round(digits = 2)
+```
+```{r}
+#test by Haider
+data(gtrunchier)
+boot.vc(gtrunchier[,c(1:2)],gtrunchier[,-c(1:2)],nboot=100)
+```
+```{r}
+#test by Haider
+gtrunchier
+```
+```{r}
+#test by Haider
+gtrunchier[,c(1:2)]
+```
+```{r}
+#test by Haider
+boot.vc(genind2hierfstat(Brown.Trout))
+
+```
+
+```{r}
+#sub
+ Brown.Trout_sub = popsub(Brown.Trout, sublist =  c('Cont_Wild_Cont_Heik_125' , 'Cont_Wild_Rest_Heik_144' , 'Cont_Wild_Cont_Kall_566' , 'Cont_Wild_Rest_Kall_576' , 'Cont_Wild_Cont_Savi_269' , 'Cont_Wild_Rest_Savi_287' , 'Cont_Wild_Cont_Silt_404' , 'Cont_Wild_Rest_Silt_411'))
+ 
+
+Brown.Trout_fst = genet.dist(Brown.Trout_sub, method = "WC84") %>% round(digits = 3)
+Brown.Trout_fst
+```
+
+```{r}
+lab_order = c('Cont_Wild_Cont_Heik_125' , 'Cont_Wild_Rest_Heik_144' , 'Cont_Wild_Cont_Kall_566' , 'Cont_Wild_Rest_Kall_576' , 'Cont_Wild_Cont_Savi_269' , 'Cont_Wild_Rest_Savi_287' , 'Cont_Wild_Cont_Silt_404' , 'Cont_Wild_Rest_Silt_411')
+
+fst.mat = as.matrix(Brown.Trout_fst)
+fst.mat1 = fst.mat[lab_order, ]
+fst.mat2 = fst.mat1[, lab_order]
+
+ind = which(upper.tri(fst.mat2), arr.ind = TRUE)
+fst.df = data.frame(Site1 = dimnames(fst.mat2)[[2]][ind[,2]],
+                    Site2 = dimnames(fst.mat2)[[1]][ind[,1]],
+                    Fst = fst.mat2[ ind ])
+
+fst.df$Site1 = factor(fst.df$Site1, levels = unique(fst.df$Site1))
+fst.df$Site2 = factor(fst.df$Site2, levels = unique(fst.df$Site2))
+
+fst.df$Fst[fst.df$Fst < 0] = 0
+
+fst.df %>% str
+```
+
+```{r}
+fst.label = expression(italic("F")[ST])
+mid = max(fst.df$Fst) / 2
+ggplot(data = fst.df, aes(x = Site1, y = Site2, fill = Fst))+
+  geom_tile(colour = "black")+
+  geom_text(aes(label = Fst), color="black", size = 3)+
+  scale_fill_gradient2(low = "blue", mid = "white", high = "white", midpoint = mid, name = fst.label, limits = c(0, max(fst.df$Fst)), breaks = c(0, 0.05, 0.10))+
+  scale_x_discrete(expand = c(0,0))+
+  scale_y_discrete(expand = c(0,0), position = "right")+
+  theme(axis.text.y = element_text( colour = "black", size = 9, face = "bold"),
+        axis.text.x = element_text(angle= 90, colour = "black", size = 9, face = "bold"),
+        axis.title = element_blank(),
+        panel.grid = element_blank(),
+        panel.background = element_blank(),
+        legend.position = "right",
+        legend.title = element_text(size = 14, face = "bold"),
+        legend.text = element_text(size = 10)
+        )
+
+```
+
+```{r}
+#Guide from Tuomas
+example_fst = diffCalc(infile="/Users/nooralwash/Downloads/FST-B-A-resto(done).gen", fst = T, bs_pairwise = T, boots = 10000, outfile = "example_fst")
+
+```
+
+
+```{r}
+library(adegenet)
+pairwise_fst <- pairwise.fst(Brown.Trout, nb.permut = 10000) # you can adjust the number of permutations
+```
+
+
+
+#Print the number of alleles per locus
+
+```{r}
+table(Brown.Trout$loc.fac)
+
+```
+
+#Print the sample size for each site
+```{r}
+summary(Brown.Trout$pop)
+
+```
+
+#Print the number of private alleles per site across all loci 
+
+```{r}
+private_alleles(Brown.Trout) %>% apply(MARGIN = 1, FUN = sum)
+```
+
+#Print mean allelic richness per site across all loci (a higher number of alleles at a particular locus can indicate greater genetic diversity.)
+```{r}
+allelic.richness(genind2hierfstat(Brown.Trout))$Ar %>%
+  apply(MARGIN = 2, FUN = mean) %>% 
+  round(digits = 3)
+```
+
+#Calculate heterozygosity per site (a higher proportion of heterozygous individuals at a particular locus can indicate greater genetic diversity.)
+
+```{r}
+basic_Btrout
+```
+
+
+```{r}
+basic_Btrout = basic.stats(Brown.Trout, diploid = TRUE)
+Ho_Btrout = apply(basic_Btrout$Ho, MARGIN = 2, FUN = mean, na.rm = TRUE) %>%  round(digits = 2)
+Ho_Btrout
+```
+
+# Mean expected heterozygosity per site
+
+```{r}
+He_Btrout = apply(basic_Btrout$Hs, MARGIN = 2, FUN = mean, na.rm = TRUE) %>%
+  round(digits = 2)
+He_Btrout
+```
+
+#Visualise heterozygosity per site (the observed heterozygosity (Ho) and the expected heterozygosity (He))
+
+```{r}
+Het_Btrout_df = data.frame(Site = names(Ho_Btrout), Ho = Ho_Btrout, He = He_Btrout) %>%
+  melt(id.vars = "Site")
+
+custom_theme = theme(
+  axis.text.x = element_text(size = 10, angle = 90, vjust = 0.5, face = "bold"),
+  axis.text.y = element_text(size = 10),
+  axis.title.y = element_text(size = 12),
+  axis.title.x = element_blank(),
+  axis.line.y = element_line(size = 0.5),
+  legend.title = element_blank(),
+  legend.text = element_text(size = 12),
+  panel.grid = element_blank(),
+  panel.background = element_blank(),
+  plot.title = element_text(hjust = 0.5, size = 15, face="bold")
+  )
+hetlab.o = expression(italic("H")[o])
+hetlab.e = expression(italic("H")[e])
+
+ggplot(data = Het_Btrout_df, aes(x = Site, y = value, fill = variable))+
+  geom_bar(stat = "identity", position = "dodge", colour = "black")+
+  scale_y_continuous(expand = c(0,0), limits = c(0,0.750), breaks = c(0, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60))+
+  scale_fill_manual(values = c("pink", "#bdbdbd"), labels = c(hetlab.o, hetlab.e))+
+  ylab("Heterozygosity")+
+  ggtitle("B.trout Heterozygosity")+
+  custom_theme
+```
+#Inbreeding coefficient (FIS) (The FIS value is a measure of the proportion of homozygosity in a population, with higher values indicating a higher level of homozygosity and lower values indicating a lower level of homozygosity)
+Calculate mean FIS per site.
+
+```{r}
+Het_Btrout_df
+```
+
+
+```{r}
+# Perform cross validation to find the optimal number of PCs to retain in DAPC (Discriminant Analysis Machine Learning model cross validation: Building and cross validating a model that can predict future samples belonging to which population)
+set.seed(123)
+x = tab(Brown.Trout_sub, NA.method = "mean")
+crossval = xvalDapc(x, Brown.Trout_sub$pop, result = "groupMean", xval.plot = TRUE)
+
+```
+```{r}
+# Number of PCs with best stats (lower score = better)
+crossval$`Root Mean Squared Error by Number of PCs of PCA`
+##        20        40        60        80       100       120       140 
+## 0.7072406 0.6354916 0.6501085 0.6206800 0.6247699 0.6145408 0.6140150
+crossval$`Number of PCs Achieving Highest Mean Success`
+## [1] "120"
+crossval$`Number of PCs Achieving Lowest MSE`
+## [1] "140"
+numPCs = as.numeric(crossval$`Number of PCs Achieving Lowest MSE`)
+```
+
+
+
+```{r}
+# Run a DAPC using site IDs as priors
+dapc1 = dapc(Brown.Trout_sub, Brown.Trout_sub$pop, n.pca = numPCs, n.da = 3)
+
+# Analyse how much percent of genetic variance is explained by each axis
+percent = dapc1$eig/sum(dapc1$eig)*100
+barplot(percent, ylab = "Genetic variance explained by eigenvectors (%)", ylim = c(0,60),
+        names.arg = round(percent, 1))
+```
+```{r}
+
+# Create a data.frame containing individual coordinates
+ind_coords = as.data.frame(dapc1$ind.coord)
+
+# Rename columns of dataframe
+colnames(ind_coords) = c("Axis1","Axis2","Axis3")
+
+# Add a column containing individuals
+ind_coords$Ind = indNames(Brown.Trout_sub)
+
+# Add a column with the site IDs
+ind_coords$Site = Brown.Trout_sub$pop
+
+# Calculate centroid (average) position for each population
+centroid = aggregate(cbind(Axis1, Axis2, Axis3) ~ Site, data = ind_coords, FUN = mean)
+
+# Add centroid coordinates to ind_coords dataframe
+ind_coords = left_join(ind_coords, centroid, by = "Site", suffix = c("",".cen"))
+
+# Define colour palette
+cols = brewer.pal(nPop(Brown.Trout_sub), "Set2")
+
+# Custom x and y labels
+xlab = paste("Axis 1 (", format(round(percent[1], 1), nsmall=1)," %)", sep="")
+ylab = paste("Axis 2 (", format(round(percent[2], 1), nsmall=1)," %)", sep="")
+
+
+
+# Custom theme for ggplot2
+ggtheme = theme(axis.text.y = element_text(colour="black", size=12),
+                axis.text.x = element_text(colour="black", size=12),
+                axis.title = element_text(colour="black", size=12),
+                panel.border = element_rect(colour="black", fill=NA, size=1),
+                panel.background = element_blank(),
+                plot.title = element_text(hjust=0.5, size=15) 
+)
+```
+
+```{r}
+# Scatter plot axis 1 vs. 2
+ggplot(data = ind_coords, aes(x = Axis1, y = Axis2))+
+  geom_hline(yintercept = 0)+
+  geom_vline(xintercept = 0)+
+  # spider segments
+  geom_segment(aes(xend = Axis1.cen, yend = Axis2.cen, colour = Site), show.legend = FALSE)+
+  # points
+  geom_point(aes(fill = Site), shape = 21, size = 3, show.legend = FALSE)+
+  # centroids
+  geom_label(data = centroid, aes(label = Site, fill = Site), size = 4, show.legend = FALSE)+
+  # colouring
+  scale_fill_manual(values = cols)+
+  scale_colour_manual(values = cols)+
+  # custom labels
+  labs(x = xlab, y = ylab)+
+  ggtitle("Brown trout PCA")+
+  # custom theme
+  ggtheme
+
+```
+
+```{r}
+library("diveRsity")
+```
+
+
+```{r}
+example_fst = diffCalc(infile = "/Users/nooralwash/Desktop/R_projects/today work/31-dec/8_pop copy.gen", outfile = "example_fst", fst = T, bs_locus = F, bs_pairwise = T, boots = 1000, alpha = 0.01)
+```
+```{r}
+args(diffCalc)
+```
+
+```{r}
+example_fst
+
+```
+```{r}
+library("diveRsity")
+
+```
+
+```{r}
+example_fst = diffCalc(infile = "/Users/nooralwash/Desktop/R_projects/today work/31-dec/8_pop copy.gen", outfile = "example_fst", fst = T, bs_locus = F, bs_pairwise = T, boots = 1000, alpha = 0.05)
+
+
+```
+
+```{r}
+example_fst
+```
+

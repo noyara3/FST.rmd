@@ -1,0 +1,139 @@
+---
+output:
+  html_document:
+    df_print: paged
+  pdf_document: Ho/He
+---
+
+#Packages
+```{r}
+install.packages("ggplot2", repos = "http://cran.us.r-project.org")
+library("ggplot2") 
+install.packages("adegenet", repos = "http://cran.us.r-project.org") 
+library("adegenet") 
+install.packages("dplyr", repos = "http://cran.us.r-project.org") 
+library("dplyr") 
+install.packages("poppr", repos = "http://cran.us.r-project.org") 
+library("poppr") 
+install.packages("hierfstat", repos = "http://cran.us.r-project.org") 
+library("hierfstat") 
+install.packages("reshape2", repos = "http://cran.us.r-project.org") 
+library("reshape2") 
+install.packages("scales", repos = "http://cran.us.r-project.org") 
+library("scales") 
+install.packages("RColorBrewer", repos = "http://cran.us.r-project.org") 
+library("RColorBrewer") 
+install.packages("diveRsity", repos = "http://cran.us.r-project.org") 
+library("RColorBrewer") 
+```
+
+
+#Download data
+```{r}
+Brown.Trout = read.genepop('/Users/nooralwash/Downloads/DataR_2.gen', ncode = 3L)
+```
+
+#print
+```{r}
+Brown.Trout
+```
+#popNames/
+```{r}
+popNames(Brown.Trout) = c("Heikkisenjoki_Background_C", "Heikkisenjoki_Background_R","Heikkisenjoki_Recovery_C", "Heikkisenjoki_Recovery_R", "Heikkisenjoki_Contemporary_C", "Heikkisenjoki_Contemporary_R", "KALL_Background_C", "KALL_Background_R", "KALL_Recovery_C", "KALL_Recovery_R", "KALL_Contemporary_C", "KALL_Contemporary_R", "Savijoki_Background_C", "Savijoki_Background_R", "Savijoki_Recovery_C", "Savijoki_Recovery_R", "Savijoki_Contemporary_C", "Savijoki_Contemporary_R", "Siltapuro_Background_C", "Siltapuro_Background_R", "Siltapuro_Recovery_C", "Siltapuro_Recovery_R", "Siltapuro_Contemporary_C", "Siltapuro_Contemporary_R")
+```
+
+#Ho/Calculate heterozygosity per site (a higher proportion of heterozygous individuals at a particular locus can indicate greater genetic diversity.)
+```{r}
+basic_Btrout = basic.stats(Brown.Trout, diploid = TRUE)
+Ho_Btrout = apply(basic_Btrout$Ho, MARGIN = 2, FUN = mean, na.rm = TRUE) %>%  round(digits = 2)
+Ho_Btrout
+```
+
+#He/Mean expected heterozygosity per site
+```{r}
+He_Btrout = apply(basic_Btrout$Hs, MARGIN = 2, FUN = mean, na.rm = TRUE) %>%
+  round(digits = 2)
+He_Btrout
+```
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+#Ho
+```{r}
+# 1- Assuming 'sites_order' contains the desired order of sites
+sites_order <- c ("Heikkisenjoki_Background_C" , "Heikkisenjoki_Background_R","Heikkisenjoki_Recovery_C", "Heikkisenjoki_Recovery_R", "Heikkisenjoki_Contemporary_C", "Heikkisenjoki_Contemporary_R", "KALL_Background_C", "KALL_Background_R", "KALL_Recovery_C", "KALL_Recovery_R", "KALL_Contemporary_C", "KALL_Contemporary_R", "Savijoki_Background_C", "Savijoki_Background_R", "Savijoki_Recovery_C", "Savijoki_Recovery_R", "Savijoki_Contemporary_C", "Savijoki_Contemporary_R", "Siltapuro_Background_C", "Siltapuro_Background_R", "Siltapuro_Recovery_C", "Siltapuro_Recovery_R", "Siltapuro_Contemporary_C", "Siltapuro_Contemporary_R")
+
+# 1. Assign levels to 'Site'
+Het_Btrout_df$Site <- factor(Het_Btrout_df$Site, levels = sites_order)
+# 2. Create a new data frame with reshaped data
+Het_Btrout_long <- data.frame(Site = names(Ho_Btrout), Ho = Ho_Btrout) %>%
+  melt(id.vars = "Site", na.rm = TRUE)
+
+# 3. Add a 'color' column
+Het_Btrout_long$color <- ifelse(substr(Het_Btrout_long$Site, nchar(as.character(Het_Btrout_long$Site)), nchar(as.character(Het_Btrout_long$Site))) == "C", "blue", "red")
+custom_theme = theme(
+  axis.text.x = element_text(size = 7, angle = 90, vjust = 0.5, face = "bold"),
+  axis.text.y = element_text(size = 10),
+  axis.title.y = element_text(size = 11),
+  axis.title.x = element_blank(),
+  axis.line.y = element_line(size = 0.5),
+  legend.title = element_blank(),
+  legend.text = element_text(size = 10),
+  panel.grid = element_blank(),
+  panel.background = element_blank(),
+  plot.title = element_text(hjust = 0.5, size = 12, face="bold")
+  )
+hetlab.o = expression(italic("H")[o])
+hetlab.e = expression(italic("H")[e])
+
+p <- ggplot(data = Het_Btrout_df, aes(x = Site, y = value, fill = color)) +
+  geom_bar(stat = "identity", position = "identity") +  
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 0.75), breaks = seq(0, 0.6, by = 0.1)) +
+  scale_fill_manual(values = c("blue", "#bdbdbd"), labels = c("Control","Treatment")) +
+  ylab("Value") +
+  ggtitle("Observed Heterozygosity") + 
+  custom_theme +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 1))  # Adjust vjust value
+p
+```
+
+He
+```{r}
+# 1- Assuming 'sites_order' contains the desired order of sites
+sites_order <- c ("Heikkisenjoki_Background_C" , "Heikkisenjoki_Background_R","Heikkisenjoki_Recovery_C", "Heikkisenjoki_Recovery_R", "Heikkisenjoki_Contemporary_C", "Heikkisenjoki_Contemporary_R", "KALL_Background_C", "KALL_Background_R", "KALL_Recovery_C", "KALL_Recovery_R", "KALL_Contemporary_C", "KALL_Contemporary_R", "Savijoki_Background_C", "Savijoki_Background_R", "Savijoki_Recovery_C", "Savijoki_Recovery_R", "Savijoki_Contemporary_C", "Savijoki_Contemporary_R", "Siltapuro_Background_C", "Siltapuro_Background_R", "Siltapuro_Recovery_C", "Siltapuro_Recovery_R", "Siltapuro_Contemporary_C", "Siltapuro_Contemporary_R")
+
+# 1. Assign levels to 'Site'
+Het_Btrout_df$Site <- factor(Het_Btrout_df$Site, levels = sites_order)
+
+# 2. Create a new data frame with reshaped data
+Het_Btrout_long <- data.frame(Site = names(He_Btrout), He = He_Btrout) %>%
+  melt(id.vars = "Site", na.rm = TRUE) #na.rm = T used here to avoid NA missing data
+
+# 3. Add a 'color' column
+Het_Btrout_long$color <- ifelse(substr(Het_Btrout_long$Site, nchar(as.character(Het_Btrout_long$Site)), nchar(as.character(Het_Btrout_long$Site))) == "C", "blue", "red") #2 colors used here to show two colors bar 
+custom_theme = theme(
+  axis.text.x = element_text(size = 7, angle = 90, vjust = 0.5, face = "bold"),
+  axis.text.y = element_text(size = 10),
+  axis.title.y = element_text(size = 11),
+  axis.title.x = element_blank(),
+  axis.line.y = element_line(size = 0.5),
+  legend.title = element_blank(),
+  legend.text = element_text(size = 10),
+  panel.grid = element_blank(),
+  panel.background = element_blank(),
+  plot.title = element_text(hjust = 0.5, size = 12, face="bold")
+  )
+hetlab.o = expression(italic("H")[o])
+hetlab.e = expression(italic("H")[e])
+
+p <- ggplot(data = Het_Btrout_df, aes(x = Site, y = value, fill = color)) +
+  geom_bar(stat = "identity", position = "identity") +  
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 0.75), breaks = seq(0, 0.6, by = 0.1)) +
+  scale_fill_manual(values = c("blue", "#bdbdbd"), labels = c("Control","Treatment")) +
+  ylab("Value") +
+  ggtitle("Expected Heterozygosity") + 
+  custom_theme +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 1))  # Adjust vjust value
+p
+```
+
