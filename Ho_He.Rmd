@@ -71,7 +71,8 @@ sites_order <- c ("Heikkisenjoki_Background_C" , "Heikkisenjoki_Background_R","H
 # 2. Assign levels to 'Site'
 Het_Btrout_df$Site <- factor(Het_Btrout_df$Site, levels = sites_order)
 
-# 3. Add a 'color' column
+# 3. Add a 'color' column, #here always shows error if I used Het_Btrout_long so i replaced with Het_Btrout_df i think I used _long to arrange the order
+
 Het_Btrout_df$color <- ifelse(substr(Het_Btrout_long$Site, nchar(as.character(Het_Btrout_long$Site)), nchar(as.character(Het_Btrout_long$Site))) == "C", "blue", "red")
 custom_theme = theme(
   axis.text.x = element_text(size = 7, angle = 90, vjust = 0.5, face = "bold"),
